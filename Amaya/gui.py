@@ -936,24 +936,34 @@ elif nav_choice == "Strategic Presentation Suite":
             # 2. LLM Summarization for PPT
             st.write("Neural Summarization Engine active...")
             summary_prompt = f"""
-            Output a plain-text structure for exactly {slide_count} presentation slides.
-            
-            STRICT RULES:
-            1. ONLY output the slide data. No introduction or conversational text.
-            2. Start every slide with 'SLIDE: [Professional Title]'.
-            3. Use only '-' (hyphen) for bullet points.
-            4. Keep bullet points short (max 15 words).
-            5. Do NOT include any instructions like 'Insert Image' or 'Add Table'.
-            6. Do NOT use markdown bolding (**) or italics.
-            
-            Example:
-            SLIDE: Executive Summary
-            - Total revenue grew by 15% this quarter.
-            - Costs remained stable despite market volatility.
-            """
+You are a presentation content writer. Output exactly {slide_count} slides.
+
+FORMAT (follow EXACTLY):
+- Begin each slide with: SLIDE: [Title]
+- Below each SLIDE line, list 3-6 bullet points using '-' (hyphen).
+- Each bullet must be ONE standalone fact or insight, max 15 words.
+- Separate distinct ideas into separate bullets. NEVER combine multiple facts into one bullet.
+- NO introductions, conclusions, or conversational text outside the slide blocks.
+- NO markdown formatting (no **, no ##, no italics).
+- NO instructions like 'Insert Image' or 'Add Table'.
+- NO numbering on slide headers (write "SLIDE: Title" not "SLIDE 1: Title").
+
+GOOD example:
+SLIDE: Revenue Performance
+- Quarterly revenue increased 15% year-over-year.
+- North America led growth at 22% increase.
+- Operating margins improved by 3 percentage points.
+- Subscription revenue now accounts for 60% of total.
+
+BAD example (DO NOT do this):
+SLIDE: Revenue Performance
+- Revenue grew significantly this quarter across most regions, with North America leading the growth at 22% while margins improved and subscriptions rose.
+
+That BAD example puts everything in one bullet. Split each fact into its own bullet.
+"""
             
             full_summary = ""
-            for chunk in ge.generate_stream(f"Create a simple text-only PowerPoint summary in {slide_count} slides.", context, persona="Executive Summarizer", custom_instructions=summary_prompt):
+            for chunk in ge.generate_stream(f"Create a structured presentation summary in exactly {slide_count} slides from the provided context.", context, persona="Executive Summarizer", custom_instructions=summary_prompt):
                 if not chunk.startswith("__METRICS__|"):
                     full_summary += chunk
             
