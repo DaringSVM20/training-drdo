@@ -878,6 +878,7 @@ elif nav_choice == "Strategic Presentation Suite":
     st.markdown("Transform your document intelligence into boardroom-ready PowerPoint presentations using automated neural summarization.")
     
     from presentation_engine import PresentationEngine
+    from presentation_themes import get_theme_names
     pe = PresentationEngine()
 
     with st.container(border=True):
@@ -910,6 +911,7 @@ elif nav_choice == "Strategic Presentation Suite":
 
         with c2:
             st.subheader("Presentation Controls")
+            selected_theme = st.selectbox("Visual Theme", get_theme_names(), index=0, help="Choose a color and layout theme for the presentation.")
             slide_count = st.slider("Target Slide Count", 3, 15, 7)
             ppt_persona = st.selectbox("Presentation Tone", ["Boardroom (Formal)", "Technical (Detailed)", "Executive Summary (Brief)"])
             include_assets = st.multiselect("Include Artifacts", ["Images", "Data Tables"], default=["Data Tables"])
@@ -972,7 +974,8 @@ elif nav_choice == "Strategic Presentation Suite":
                 title=f"Executive Summary: {subject}",
                 subtitle=f"Generated via Amaya | {datetime.now().strftime('%Y-%m-%d')}",
                 slides_data=slides_data,
-                output_path=out_file
+                output_path=out_file,
+                theme_name=selected_theme
             )
             
             status.update(label="Presentation Architecture Complete!", state="complete")
