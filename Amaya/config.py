@@ -21,7 +21,7 @@ class AppConfig(BaseSettings):
     """
     # --- PATHS ---
     # Centralized path management to ensure consistency across engines.
-    BASE_DIR: Path = Path(r"C:\Amaya")
+    BASE_DIR: Path = Path(r"D:\June 2026 Internship\project\rag-main\Amaya")
     MODELS_CACHE: Path = BASE_DIR / "models_cache"
     CHROMA_DB_DIR: Path = BASE_DIR / "chroma_db"
     OUTPUT_ROOT: Path = BASE_DIR / "results"

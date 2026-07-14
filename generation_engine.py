@@ -83,7 +83,7 @@ class GenerationEngine:
                 f"{self.base_url}/api/chat",
                 json=payload,
                 stream=True,
-                timeout=300
+                timeout=600
             )
             response.raise_for_status()
             

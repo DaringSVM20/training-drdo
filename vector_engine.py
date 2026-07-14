@@ -35,7 +35,7 @@ class VectorEngine:
     def _get_ollama_embedding(self, text: str) -> List[float]:
         """Fetches a single embedding from Ollama."""
         payload = {"model": self.embed_model, "prompt": text}
-        response = requests.post(f"{self.base_url}/api/embeddings", json=payload, timeout=300)
+        response = requests.post(f"{self.base_url}/api/embeddings", json=payload, timeout=600)
         response.raise_for_status()
         return response.json()["embedding"]
 

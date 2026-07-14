@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class AppConfig(BaseSettings):
     # --- PATHS ---
-    BASE_DIR: Path = Path(r"C:\docling_dist-313")
+    BASE_DIR: Path = Path(r"D:\June 2026 Internship\project\rag-main")
     MODELS_CACHE: Path = BASE_DIR / "models_cache_311"
     CHROMA_DB_DIR: Path = BASE_DIR / "chroma_db"
     OUTPUT_ROOT: Path = BASE_DIR / "newresults"
