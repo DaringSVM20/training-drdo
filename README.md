@@ -16,14 +16,15 @@ To set up a fresh environment from scratch:
    ```powershell
    python -m venv amaya_env
    ```
-3. **Activate the Environment**:
-   ```powershell
-   # In PowerShell:
-   .\amaya_env\Scripts\Activate.ps1
-   
-   # In CMD:
-   .\amaya_env\Scripts\activate.bat
-   ```
+3. **Activate the Environment** (Optional):
+   * **In Command Prompt (CMD)**:
+     ```cmd
+     .\amaya_env\Scripts\activate.bat
+     ```
+     *(This will show `(amaya_env)` prepended to your command prompt line).*
+   * **In PowerShell**:
+     This environment was created via Conda packaging and does not contain a PowerShell-native `Activate.ps1` script. `activate.bat` will not work inside PowerShell.
+     *Instead of activating, it is recommended to run commands directly targeting the environment's executables as shown in Section 5 below.*
 
 ---
 
@@ -103,14 +104,18 @@ Ollama handles prompt synthesis and vector generation.
 
 ---
 
-## 5. Launch the Streamlit Application
+Run the application using **one** of the following methods depending on your terminal:
 
-Run the application inside the virtual environment:
+### Method A: Directly via PowerShell (Recommended, No activation required)
+You can run the application directly without needing to activate the environment:
 ```powershell
-# Ensure your environment is active:
-.\amaya_env\Scripts\Activate.ps1
+.\amaya_env\python.exe -m streamlit run .\Amaya\gui.py
+```
 
-# Start the Streamlit server:
+### Method B: Via Command Prompt (CMD)
+If you prefer standard activation, open CMD and run:
+```cmd
+.\amaya_env\Scripts\activate.bat
 streamlit run .\Amaya\gui.py
 ```
 This will automatically open the browser interface at `http://localhost:8501`.
@@ -140,4 +145,5 @@ To verify the pipeline functions correctly:
 | **`OSError: Repo id must use alphanumeric chars...`** | The offline chunker could not locate the tokenizers folder on disk. | Ensure the model cache directory folders (specifically the Granite model folder `ibm-granite--granite-docling-258M`) exist inside `Amaya\models_cache\`. |
 | **`Ollama Generation Error: 400 Client Error: Bad Request`** | The document context window was overloaded, or the context exceeded default Ollama limits. | Clean or reduce your context files. We have optimized `gui.py` to limit context to 15 chunks and increased the API request window to `num_ctx: 4096` to resolve this. |
 | **`ConnectionError: Could not reach Ollama server`** | The Ollama desktop service is stopped. | Start Ollama client from your Start Menu or execute `ollama serve` in a background terminal. |
-| **`ImportError: DLL load failed` (PyTorch/CUDA)** | The Python environment contains binary mismatch for Windows (often happens if transferring packages between different OS architectures). | Reinstall the PyTorch/dependencies inside the virtual environment using the correct Windows wheel version. |
+| **`ImportError: DLL load failed`** (PyTorch/CUDA) | The Python environment contains binary mismatch for Windows (often happens if transferring packages between different OS architectures). | Reinstall the PyTorch/dependencies inside the virtual environment using the correct Windows wheel version. |
+| **`WARNING - Usage of TableItem.export_to_dataframe() ...`** | Deprecated API call warning inside third-party `docling-core` library. | **Harmless warning.** Ingestion completed successfully (all chunks were fully processed and indexed). You can ignore this. |
