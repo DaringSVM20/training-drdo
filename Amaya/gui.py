@@ -938,6 +938,7 @@ elif nav_choice == "Strategic Presentation Suite":
             slide_count = st.slider("Target Slide Count", 3, 15, 7)
             ppt_persona = st.selectbox("Presentation Tone", ["Boardroom (Formal)", "Technical (Detailed)", "Executive Summary (Brief)"])
             include_assets = st.multiselect("Include Artifacts", ["Images", "Data Tables"], default=["Data Tables"])
+            custom_instructions = st.text_area("Custom Formatting Instructions", value="", placeholder="e.g. make slides more technical, focus on revenue, add a comparison bullet on slide 3", help="Custom user steering instructions for the PowerPoint generation prompt")
 
     if st.button("🚀 Build Strategic Intelligence Deck", type="primary", use_container_width=True):
         with st.status("Synthesizing Presentation Hierarchy...", expanded=True) as status:
@@ -956,11 +957,17 @@ elif nav_choice == "Strategic Presentation Suite":
                 context = "\n\n".join([f"{m['role'].upper()}: {m['content']}" for m in loaded_messages])
                 subject = f"Research Synthesis ({selected_session if 'selected_session' in locals() else 'Live Session'})"
 
+            # Format user instructions outside f-string to avoid Python <3.12 backslash syntax error
+            additional_instr = ""
+            if custom_instructions.strip():
+                additional_instr = f"ADDITIONAL USER INSTRUCTIONS (Follow these strictly):\n- {custom_instructions.strip()}\n"
+
             # 2. LLM Summarization for PPT
             st.write("Neural Summarization Engine active...")
             summary_prompt = f"""
 You are a presentation content writer. Output exactly {slide_count} slides.
 
+{additional_instr}
 FORMAT (follow EXACTLY):
 - Begin each slide with: SLIDE: [Title]
 - Below each SLIDE line, list 3-6 bullet points using '-' (hyphen).
