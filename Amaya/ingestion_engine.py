@@ -78,6 +78,15 @@ class IngestionEngine:
         # Docling chunkers require a HuggingFace tokenizer identifier or an exact valid local directory.
         # We use a standard fast tokenizer for generic text chunking.
         tokenizer_model = str(config.RERANKER_MODEL_PATH)
+        if not os.path.exists(tokenizer_model):
+            # Check if Granite model was downloaded and is available as a fallback local tokenizer
+            fallback_path = config.MODELS_CACHE / "ibm-granite--granite-docling-258M"
+            if fallback_path.exists():
+                logger.info(f"Reranker model tokenizer not found at {tokenizer_model}. Falling back to Granite tokenizer at {fallback_path}")
+                tokenizer_model = str(fallback_path)
+            else:
+                logger.warning(f"No local tokenizer found. Chunker may fail in offline mode.")
+
         max_tokens = chunker_kwargs.get("max_tokens", config.DEFAULT_MAX_TOKENS)
         merge_peers = chunker_kwargs.get("merge_peers", config.DEFAULT_MERGE_PEERS)
 

@@ -654,8 +654,22 @@ elif nav_choice == "Knowledge Engineering Studio":
             status_container = st.empty()
             with status_container.container(border=True):
                 if job["status"] == "Completed":
-                    st.success(f"✅ **Engineering Success:** '{job['name']}' has been integrated into the vault.")
-                    st.balloons()
+                    # Check if there was any failure in the logs
+                    has_failures = any("FAILURE" in log for log in job["logs"])
+                    if has_failures:
+                        st.error(f"❌ **Engineering Failed:** '{job['name']}' encountered errors.")
+                    else:
+                        st.success(f"✅ **Engineering Success:** '{job['name']}' has been integrated into the vault.")
+                        st.balloons()
+                    
+                    if job["logs"]:
+                        with st.expander("Process Logs", expanded=True):
+                            for log in job["logs"]:
+                                if "FAILURE" in log:
+                                    st.error(log)
+                                else:
+                                    st.code(log)
+                    
                     if st.button("Acknowledge & Clear"):
                         del st.session_state.last_job_id
                         st.rerun()
@@ -664,6 +678,15 @@ elif nav_choice == "Knowledge Engineering Studio":
                     st.write(f"Studio Phase: `{job['status']}`")
                     st.progress(job["progress"])
                     st.caption(f"Targeting Domain: `{st.session_state.get('target_col_input', 'default')}`")
+                    
+                    if job["logs"]:
+                        with st.expander("Live Process Logs", expanded=True):
+                            for log in job["logs"]:
+                                if "FAILURE" in log:
+                                    st.error(log)
+                                else:
+                                    st.code(log)
+                    
                     time.sleep(2)
                     st.rerun()
 
