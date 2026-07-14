@@ -456,8 +456,27 @@ with st.sidebar:
     available_models = get_available_models()
     
     if available_models:
-        selected_llm = st.selectbox("LLM Inference Model", available_models, help="Select the model for text generation.")
-        selected_embed = st.selectbox("Vector Embedding Model", available_models, help="Select the model for document indexing.")
+        # Resolve default indices based on global config to prevent selecting embed models for LLM
+        default_llm_index = 0
+        for idx, m in enumerate(available_models):
+            if config.OLLAMA_LLM_MODEL in m.lower():
+                default_llm_index = idx
+                break
+        else:
+            # Fallback: first model that doesn't sound like an embedding model
+            for idx, m in enumerate(available_models):
+                if "embed" not in m.lower() and "bge" not in m.lower():
+                    default_llm_index = idx
+                    break
+
+        default_embed_index = 0
+        for idx, m in enumerate(available_models):
+            if config.OLLAMA_EMBED_MODEL in m.lower() or "nomic" in m.lower() or "embed" in m.lower():
+                default_embed_index = idx
+                break
+
+        selected_llm = st.selectbox("LLM Inference Model", available_models, index=default_llm_index, help="Select the model for text generation.")
+        selected_embed = st.selectbox("Vector Embedding Model", available_models, index=default_embed_index, help="Select the model for document indexing.")
     else:
         st.error("Connection Failure: Ollama server unreachable.")
         selected_llm = config.OLLAMA_LLM_MODEL
