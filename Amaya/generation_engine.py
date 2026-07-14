@@ -127,7 +127,8 @@ class GenerationEngine:
             "options": {
                 "num_predict": max_new_tokens,
                 "temperature": temperature,
-                "top_p": top_p
+                "top_p": top_p,
+                "num_ctx": 4096
             }
         }
         
@@ -136,7 +137,7 @@ class GenerationEngine:
                 f"{self.base_url}/api/chat",
                 json=payload,
                 stream=True,
-                timeout=300
+                timeout=600
             )
             response.raise_for_status()
             
@@ -157,7 +158,10 @@ class GenerationEngine:
                         yield f"__METRICS__|{tps}|{total_duration}"
                         break
         except Exception as e:
-            logger.error(f"Ollama Generation Error: {e}")
+            if hasattr(e, 'response') and e.response is not None:
+                logger.error(f"Ollama Generation Error: {e} | Details: {e.response.text}")
+            else:
+                logger.error(f"Ollama Generation Error: {e}")
             yield f"\n[ERROR: Failed to communicate with Ollama server: {e}]"
 
 from vector_engine import BaseRetrievalEngine

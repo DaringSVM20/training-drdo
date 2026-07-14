@@ -951,7 +951,7 @@ elif nav_choice == "Strategic Presentation Suite":
                     st.stop()
                 with open(chunks_file, "r", encoding="utf-8") as f:
                     raw_data = json.load(f)
-                context = "\n\n".join([c["text"] for c in raw_data[:50]]) # Limit to first 50 for summarization
+                context = "\n\n".join([c["text"] for c in raw_data[:15]]) # Limit to first 15 for safety in summarization context window
                 subject = selected_folder_name
             else:
                 context = "\n\n".join([f"{m['role'].upper()}: {m['content']}" for m in loaded_messages])
