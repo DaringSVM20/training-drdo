@@ -146,6 +146,15 @@ This section catalogues the programming languages, frameworks, libraries, AI mod
 
 ---
 
+## Vector Databases
+
+### ChromaDB
+* **What it is**: A vector database optimized for storing token embeddings and managing unstructured research vault segments.
+* **Why it is used**: Saves documents inside local persistent folders via SQLite index parameters.
+* **Where exactly it appears in the project**: [vector_engine.py](file:///d:/June%202026%20Internship/project/rag-main/Amaya/vector_engine.py).
+
+---
+
 ## APIs
 
 ### Ollama REST API
@@ -153,6 +162,33 @@ This section catalogues the programming languages, frameworks, libraries, AI mod
 * **Why it is used**: Exposes local endpoints like `/api/chat` and `/api/tags` to generate text and list available models.
 * **Where exactly it appears in the project**: [generation_engine.py](file:///d:/June%202026%20Internship/project/rag-main/Amaya/generation_engine.py).
 * **Important implementation details**: Used Python's `requests` library to stream responses from the `/api/chat` endpoint and process options like `"num_ctx"` and `"temperature"`.
+
+---
+
+## Databases
+
+### SQLite (Embedded)
+* **What it is**: A C-language library that implements a small, fast, self-contained, high-reliability, full-featured SQL database engine.
+* **Why it is used**: Used by ChromaDB to store documents, index relationships, metadata, and segment IDs locally.
+* **Where exactly it appears in the project**: Underneath the persistent directory folder `chroma_db/`.
+
+---
+
+## Backend Technologies
+
+### Streamlit Internal Server (Uvicorn / WebSockets)
+* **What it is**: Streamlit's web-server adapter that handles socket sessions and routes client states.
+* **Why it is used**: Translates real-time values from the GUI browser views into Python threads.
+* **Where exactly it appears in the project**: Streamlit dashboard environment execution.
+
+---
+
+## Frontend Technologies
+
+### Streamlit Components & Custom CSS Injection
+* **What it is**: Python utilities to inject styled custom layouts and CSS modifications directly within Streamlit blocks.
+* **Why it is used**: Allows customizing the default Streamlit theme, giving the interface a dark-themed visual layout (`brand-container`, citation cards).
+* **Where exactly it appears in the project**: [gui.py](file:///d:/June%202026%20Internship/project/rag-main/Amaya/gui.py).
 
 ---
 
@@ -186,6 +222,17 @@ This section catalogues the programming languages, frameworks, libraries, AI mod
 
 ---
 
+## Design Patterns
+
+### Singleton Pattern
+* **What it is**: A software design pattern that restricts the instantiation of a class to a single, globally shared instance.
+* **Why it is used**: Prevents multiple independent instances of heavy database connections (ChromaDB client) or background job managers from conflicting or wasting system memory.
+* **Where exactly it appears in the project**:
+  * `get_job_manager()` in [gui.py](file:///d:/June%202026%20Internship/project/rag-main/Amaya/gui.py) implements a singleton database/state manager class using Streamlit caching.
+  * `ModelManager` in [vector_engine.py](file:///d:/June%202026%20Internship/project/rag-main/Amaya/vector_engine.py) manages loading/unloading singleton references to active deep-learning models.
+
+---
+
 ## Security
 
 ### Local-First Network Isolation (Air-Gapped Compliance)
@@ -209,14 +256,78 @@ This section catalogues the programming languages, frameworks, libraries, AI mod
 
 ---
 
-## Design Patterns
+## Infrastructure & Model Configuration (Models Cache Setup)
 
-### Singleton Pattern
-* **What it is**: A software design pattern that restricts the instantiation of a class to a single, globally shared instance.
-* **Why it is used**: Prevents multiple independent instances of heavy database connections (ChromaDB client) or background job managers from conflicting or wasting system memory.
-* **Where exactly it appears in the project**:
-  * `get_job_manager()` in [gui.py](file:///d:/June%202026%20Internship/project/rag-main/Amaya/gui.py) implements a singleton database/state manager class using Streamlit caching.
-  * `ModelManager` in [vector_engine.py](file:///d:/June%202026%20Internship/project/rag-main/Amaya/vector_engine.py) manages loading/unloading singleton references to active deep-learning models.
+To execute Amaya successfully in an offline, air-gapped environment (such as TBRL or other secured networks), the local filesystem must contain all necessary dependencies and model files. This section lists these dependencies and outlines the folder structures.
+
+### 1. Offline Environment Dependencies (`amaya_env`)
+The project utilizes a pre-configured Python 3.11 virtual environment. For a new deployment, you need to stage package files (wheel `.whl` files) on an internet-enabled PC and install them on the air-gapped system.
+
+**Required Packages (`requirements.txt`):**
+* `python-pptx==1.0.2` (Required for building presentation hierarchies programmatically)
+* `xlsxwriter==3.2.9` (Required for programmatically building high-fidelity Excel tables from parsed nodes)
+* `pydantic-settings==2.14.2` (Required for global settings validations and environmental overrides support)
+
+*Note: The environment also contains the core RAG runtime engines including: `streamlit`, `docling` (with its parser sub-models), `chromadb` (vector storage), `rank_bm25` (lexical indexer), `fitz` (PyMuPDF for PDF preview), and `requests` (for local Ollama communication).*
+
+---
+
+### 2. Large Model Cache Directory Structure
+The ingestion parser, chunker, and search-ranking systems require offline deep-learning weights. These files must reside in the directory specified by `config.MODELS_CACHE` (which resolves to `Amaya/models_cache/` in the project root).
+
+Below is the directory structure for `Amaya/models_cache/`:
+
+```
+d:\June 2026 Internship\project\rag-main\Amaya\models_cache\
+├── RapidOcr/                             # Layout OCR detection libraries
+├── docling-project--CodeFormulaV2/       # Mathematical formulas reconstruction models
+├── docling-project--TableFormerV2/       # Table structure analyzer and matrix parser
+├── docling-project--docling-layout-heron/# Layout classifier and reading order mapper
+├── docling-project--docling-models/      # Core Docling structural configurations
+├── ds4sd--DocumentFigureClassifier/      # Isolates figure zones and images
+├── ibm-granite--granite-docling-258M/    # Lightweight structural parser & falls back tokenizer
+└── ms-macro-MiniLM-L6-v2/                # Reranking cross-encoder model folder (Optional)
+```
+
+---
+
+### 3. Step-by-Step Operations Guide for a New User
+Follow this guide to set up and run the project from scratch:
+
+#### Step A: Pull LLM Models locally via Ollama
+Ensure the Ollama service is running on your machine, then pull the LLM models to run them locally:
+```powershell
+ollama pull phi3:mini
+ollama pull nomic-embed-text
+```
+
+#### Step B: Launch the Application
+Run the Streamlit application using **one** of the methods below:
+
+* **Method 1 (Recommended for PowerShell / terminal command line):**
+  Run the application directly using the Python executable inside your virtual environment (no manual activation step needed):
+  ```powershell
+  .\amaya_env\python.exe -m streamlit run .\Amaya\gui.py
+  ```
+
+* **Method 2 (Command Prompt / CMD standard activation):**
+  If you are using a standard command window:
+  ```cmd
+  .\amaya_env\Scripts\activate.bat
+  streamlit run .\Amaya\gui.py
+  ```
+
+#### Step C: Process and Ingest Documents
+1. Open the web interface at `http://localhost:8501`.
+2. Navigate to the **Knowledge Engineering Studio** tab in the sidebar.
+3. Click "Browse" and upload your target PDF document.
+4. Click **Initiate Engineering Workflow** and monitor the progress logs. The system parses the document layout, extracts tables, and saves vector embeddings to ChromaDB.
+
+#### Step D: Generate Boardroom Presentations
+1. Navigate to the **Strategic Presentation Suite** tab.
+2. Under "Source Material," select the ingested job folder.
+3. Choose a styling theme (e.g., **Corporate Navy** or **Emerald Executive**) and input any custom requirements in the **Custom Formatting Instructions** field.
+4. Click **🚀 Build Strategic Intelligence Deck**. The system will generate structured slides using the local LLM and build a downloadable styled `.pptx` presentation.
 
 ---
 
